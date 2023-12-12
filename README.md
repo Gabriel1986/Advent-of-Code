@@ -24,4 +24,4 @@ Additional parameters:
 
 `<year> <day> <part>` - Runs the solution for a specific part of a specific day
 
-`test <other args>` - Runs the test cases for the specified other arguments (e.g. dotnet test 2023 9 1)
+`test <other args>` - Runs the test cases for the specified other arguments (e.g. dotnet run test 2023 9 1)
