@@ -18,7 +18,7 @@ let parseDiePulls (line: string) =
     |> Seq.map (fun x -> x.Trim().Split(" "))
     |> Seq.map (fun x -> 
         let dieColor = x[1]
-        let nbDice = Int32.Parse x[0]
+        let nbDice = int x[0]
         { DieColor = dieColor; NumberOfDice = nbDice })
 
 let part1 (input) =
@@ -32,7 +32,7 @@ let part1 (input) =
 
     input
     |> Array.sumBy (fun line ->
-        let gameNumber = Int32.Parse(digitRegex.Match(line).Value)
+        let gameNumber = int(digitRegex.Match(line).Value)
 
         let gameIsImpossible =
             line

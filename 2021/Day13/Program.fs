@@ -8,7 +8,7 @@ type FoldInstruction =
 
 let (|Prefix|_|) (p:string) (s:string) =
     if s.StartsWith(p) then
-        Some (Int32.Parse (s.Substring(p.Length).Trim()))
+        Some (int (s.Substring(p.Length).Trim()))
     else
         None
 
@@ -16,7 +16,7 @@ let private parseInput (input: string array) =
     let dots =
         input
         |> Seq.takeWhile (fun x -> x <> "")
-        |> Seq.map (fun coordinateString -> coordinateString.Split(",") |> (fun split -> Int32.Parse split[0], Int32.Parse split[1]))
+        |> Seq.map (fun coordinateString -> coordinateString.Split(",") |> (fun split -> int split[0], int split[1]))
         |> Set.ofSeq
 
     let foldInstructions =

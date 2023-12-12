@@ -90,5 +90,5 @@ let part2 (input: string array) =
         inputPart.DigitsToFind
         |> Array.map (fun digit -> givenDictionary |> Map.find digit)
         |> String.concat ""
-        |> Int32.Parse
+        |> int
     )

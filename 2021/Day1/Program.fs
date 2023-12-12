@@ -3,7 +3,7 @@ module Year2021Day1
 open System
 
 let private parseLines (lines: string array) =
-    lines |> Array.map (Int32.Parse)
+    lines |> Array.map int
 
 let part1 (input) =
     input

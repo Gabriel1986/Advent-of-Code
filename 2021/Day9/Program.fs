@@ -7,7 +7,7 @@ let part1 (input: string array) =
         for line in input do
             [|
                 for character in line do
-                    Int32.Parse (character.ToString())
+                    int (string character)
             |]
     |]
 

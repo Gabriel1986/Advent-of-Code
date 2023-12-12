@@ -31,7 +31,7 @@ let part1 (input) =
     |> Array.indexed
     |> Array.sumBy (fun (rowIndex, line) ->
         numberRegex.Matches(line)
-        |> Seq.sumBy (fun aMatch -> if isNearSpecialCharacter rowIndex aMatch.Index aMatch.Length then Int32.Parse(aMatch.Value) else 0)
+        |> Seq.sumBy (fun aMatch -> if isNearSpecialCharacter rowIndex aMatch.Index aMatch.Length then int aMatch.Value else 0)
     )
 
 type RowIndex = int

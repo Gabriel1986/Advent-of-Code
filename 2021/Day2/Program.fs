@@ -9,7 +9,7 @@ type Direction =
 
 let (|Prefix|_|) (p:string) (s:string) =
     if s.StartsWith(p) then
-        Some (Int32.Parse (s.Substring(p.Length).Trim()))
+        Some (int (s.Substring(p.Length).Trim()))
     else
         None
 

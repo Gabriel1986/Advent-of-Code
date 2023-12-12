@@ -13,8 +13,8 @@ type Range =
 let private parseInput (input: string array) =
     let splitInTwo = function [| x; y |] -> x, y | _ -> failwithf "Unexpected input"
     let x, y = input[0].Replace("target area: ", "").Split(", ") |> splitInTwo
-    let xRange = x.Replace("x=", "").Split("..") |> Array.map Int32.Parse |> Array.sort |> splitInTwo |> (fun (x1, x2) -> { LowerBound = x1; UpperBound = x2 })
-    let yRange = y.Replace("y=", "").Split("..") |> Array.map Int32.Parse |> Array.sort |> splitInTwo |> (fun (y1, y2) -> { LowerBound = y1; UpperBound = y2 })
+    let xRange = x.Replace("x=", "").Split("..") |> Array.map int |> Array.sort |> splitInTwo |> (fun (x1, x2) -> { LowerBound = x1; UpperBound = x2 })
+    let yRange = y.Replace("y=", "").Split("..") |> Array.map int |> Array.sort |> splitInTwo |> (fun (y1, y2) -> { LowerBound = y1; UpperBound = y2 })
     xRange, yRange
 
 let part1 (input) =

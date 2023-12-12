@@ -49,11 +49,11 @@ let performShortestPathAlgorithm (maze: int[,], startNode: Node, goal: Node) =
 
     minNode.DistanceTraveled
 
-let private parseInput (input: string array) =
-    Array2D.init input.Length input[0].Length (fun i j -> Int32.Parse [| input[i][j] |])
+let private parseMaze (input: string array) =
+    Array2D.init input.Length input[0].Length (fun i j -> int (string (input[i][j])))
 
 let part1 (input) =
-    let maze = parseInput (input)
+    let maze = parseMaze (input)
     let maxI = maze.GetUpperBound 0
     let maxJ = maze.GetUpperBound 1
     performShortestPathAlgorithm (maze, Node.Create (0, 0, None, maze), Node.Create (maxI, maxJ, None, maze))
@@ -69,7 +69,7 @@ let private expand (maze: int[,]): int[,] =
     )
 
 let part2 (input: string array) =
-    let maze = parseInput (input)
+    let maze = parseMaze (input)
     let expandedMaze = expand maze
     let maxI = expandedMaze.GetUpperBound 0
     let maxJ = expandedMaze.GetUpperBound 1

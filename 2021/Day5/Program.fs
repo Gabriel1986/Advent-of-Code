@@ -8,7 +8,7 @@ let private parseInput (input: string array) =
     let toTuple (str: string): (Point * Point) =
         let parseNumbers (subString: string) =
             subString.Split(",")
-            |> (fun x -> { X = Int32.Parse x[0]; Y = Int32.Parse x[1] })
+            |> (fun x -> { X = int x[0]; Y = int x[1] })
 
         str.Split(" -> ")
         |> (fun x -> parseNumbers x[0], parseNumbers x[1])

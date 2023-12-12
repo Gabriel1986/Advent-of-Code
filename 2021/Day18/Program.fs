@@ -27,7 +27,7 @@ let parseNode (str: string): Node =
 
         let relevantIndexes = str |> depthsAndIndexesOfBrackets |> List.choose (fun (depth, index) -> if depth = 1 then Some index else None)
 
-        let parseInt (character: char) = Int32.Parse (string character)
+        let parseInt (character: char) = int (string character)
         let leftNode, rightNode =
             match relevantIndexes.Length with
             | 4 ->
@@ -74,14 +74,14 @@ let private tryExplode (str: string) =
     | Some explosion ->
         let toSplit = str[explosion[0]+1..explosion[1]-1]
         let splitExplosion = toSplit.Split(",")
-        let leftValue = Int32.Parse splitExplosion[0]
-        let rightValue = Int32.Parse splitExplosion[1]
+        let leftValue = int splitExplosion[0]
+        let rightValue = int splitExplosion[1]
 
         let firstPart =
             let partial = str[0..explosion[0]-1]
             let m = findLastNumberRegex.Match(partial)
             if m.Success then
-                let toReplace = Int32.Parse(m.Value)
+                let toReplace = int(m.Value)
                 findLastNumberRegex.Replace(partial, string (toReplace + leftValue), 1)
             else
                 partial
@@ -90,7 +90,7 @@ let private tryExplode (str: string) =
             let partial = str[explosion[1]+1..]
             let m = findFirstNumberRegex.Match(partial)
             if m.Success then
-                let toReplace = Int32.Parse(m.Value)
+                let toReplace = int(m.Value)
                 findFirstNumberRegex.Replace(partial, string (toReplace + rightValue), 1, m.Index)
             else
                 partial

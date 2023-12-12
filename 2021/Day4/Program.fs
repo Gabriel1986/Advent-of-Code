@@ -32,11 +32,11 @@ let private parseInput (input: string array) =
     let parseRow (str: string) =
         str.Split(" ")
         |> Array.filter ((<>) "")
-        |> Array.map (fun each -> { Number = Int32.Parse (each.Trim()); Selected = false })
+        |> Array.map (fun each -> { Number = int (each.Trim()); Selected = false })
 
     let bingoGame =
         input[0].Split(",")
-        |> Array.map (fun each -> Int32.Parse (each.Trim()))
+        |> Array.map (fun each -> int (each.Trim()))
         |> List.ofArray
 
     let boards =

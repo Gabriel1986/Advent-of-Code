@@ -10,7 +10,7 @@ let part1 (input) =
     input
     |> Array.sumBy (fun line ->
         (line |> digitRegex.Match |> fun x -> x.Index, line |> lastDigitRegex.Match |> fun x -> x.Index)
-        |> fun (firstIndex, lastIndex) -> Int32.Parse($"{line[firstIndex]}{line[lastIndex]}")
+        |> fun (firstIndex, lastIndex) -> int $"{line[firstIndex]}{line[lastIndex]}"
     )
 
 let part2 (input) =

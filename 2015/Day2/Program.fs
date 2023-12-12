@@ -5,7 +5,7 @@ let parseInput (input: string array) =
     input
     |> Array.map (fun each ->
         each.Split("x")
-        |> Array.map Int32.Parse
+        |> Array.map int
         |> (function [| l; w; h |] ->  l, w, h | _ -> failwithf "Invalid dimensions"))
 
 let part1 (input) =
