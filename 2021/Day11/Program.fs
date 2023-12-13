@@ -1,6 +1,5 @@
 ﻿/// https://adventofcode.com/2021/day/11
 module Year2021Day11
-open System
 
 let private parseInput (input: string array) =
     Array2D.init (input.Length) (input[0].Length) (fun i j -> int (string (input[i][j])))

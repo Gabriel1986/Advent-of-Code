@@ -26,7 +26,7 @@ let private enhance (times: int) (enhancer: string, image: char[][]) =
                             for squareJ in -1..1 do
                                 let originalI, originalJ = i + squareI, j + squareJ
                                 if originalI < 0 || originalI > originalMaxI || originalJ < 0 || originalJ > originalMaxJ then
-                                    if enhancer[0] = '#' then 
+                                    if enhancer[0] = '#' then
                                         if iteration % 2 = 1 then '0' else '1'
                                     else
                                         '0'

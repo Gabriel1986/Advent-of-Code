@@ -11,7 +11,7 @@ let private parseInput (input: string array) (emptyMultiplier: bigint) =
         let potentialIndexes =
             input[0]
             |> Seq.indexed
-            |> Seq.choose (fun (idx, character) -> if character = '#' then None else Some idx) 
+            |> Seq.choose (fun (idx, character) -> if character = '#' then None else Some idx)
             |> Seq.toList
 
         (potentialIndexes, input |> Seq.skip 1)
@@ -26,7 +26,7 @@ let private parseInput (input: string array) (emptyMultiplier: bigint) =
         line
         |> Seq.indexed
         |> Seq.choose (fun (columnIdx, character) ->
-            if character = '#' then 
+            if character = '#' then
                 let rowsToAdd = indexesOfEmptyRows |> Seq.takeWhile ((>) rowIdx) |> Seq.sumBy (fun _ -> emptyMultiplier)
                 let columnsToAdd = indexesOfEmptyColumns |> Seq.takeWhile ((>) columnIdx) |> Seq.sumBy (fun _ -> emptyMultiplier)
                 Some (bigint rowIdx + rowsToAdd, bigint columnIdx + columnsToAdd)
@@ -36,7 +36,7 @@ let private parseInput (input: string array) (emptyMultiplier: bigint) =
         |> Seq.toArray
     )
 
-let private calculteDistances (nodes: (bigint * bigint) array) =    
+let private calculteDistances (nodes: (bigint * bigint) array) =
     nodes
     |> Array.indexed
     |> Array.sumBy (fun (index, (row, column)) ->

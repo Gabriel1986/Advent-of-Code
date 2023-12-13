@@ -50,7 +50,7 @@ let private calculateVolume (cuboid: Cuboid) =
 
     let volume =
         cuboid.Type.multiply() *
-        bigint (abs (maxX - minX) + 1) * 
+        bigint (abs (maxX - minX) + 1) *
         bigint (abs (maxY - minY) + 1) *
         bigint (abs (maxZ - minZ) + 1)
 
@@ -65,7 +65,7 @@ let parseInput (lines: string array) (restrain: bool) =
             digitRegex.Matches(splitLine[1])
             |> Seq.map (fun each -> int each.Value)
             |> Seq.toArray
-        
+
         let minX = cubeRange.[0]
         let maxX = cubeRange.[1]
         let minY = cubeRange.[2]
@@ -94,7 +94,7 @@ let private solve (cuboids: Cuboid array) =
     |> List.sumBy calculateVolume
 
 let part1 (input) =
-    solve (parseInput input true) 
+    solve (parseInput input true)
 
 let part2 (input) =
-    solve (parseInput input false) 
+    solve (parseInput input false)

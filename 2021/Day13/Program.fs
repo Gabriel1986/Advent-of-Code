@@ -1,6 +1,5 @@
 ﻿/// https://adventofcode.com/2021/day/13
 module Year2021Day13
-open System
 
 type FoldInstruction =
     | XAxis of int
@@ -98,7 +97,7 @@ let part1 (input: string array) =
         |]
 
     (paper, Seq.head foldInstructions)
-    ||> foldPaper 
+    ||> foldPaper
     |> Array.sumBy (Array.sumBy (function "#" -> 1 | other -> 0))
 
 let part2 (input: string array) =

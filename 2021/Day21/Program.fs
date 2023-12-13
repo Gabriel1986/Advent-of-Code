@@ -8,7 +8,7 @@ type SimpleGane = {
     DieFace: int
     DiceRolls: int
     Player1: Player
-    Player2: Player 
+    Player2: Player
 }
 
 let lastDigitRegex = Regex(@"\d+", RegexOptions.RightToLeft)
@@ -26,7 +26,7 @@ let part1 (input) =
         DieFace = 0
         DiceRolls = 0
         Player1 = { Position = givenPositionPlayer1; Score = 0 }
-        Player2 = { Position = givenPositionPlayer2; Score = 0 } 
+        Player2 = { Position = givenPositionPlayer2; Score = 0 }
     }
 
     while game.Player1.Score < 1000 && game.Player2.Score < 1000 do
@@ -47,7 +47,7 @@ let part1 (input) =
     let losingScore = if game.Player1.Score >= 1000 then game.Player2.Score else game.Player1.Score
     game.DiceRolls * losingScore
 
-type GameState = 
+type GameState =
     {
         Player1Playing: bool
         Count: bigint
@@ -61,7 +61,7 @@ module GameState =
         Player1Playing = true
         Count = bigint 1
         Player1 = { Position = givenPositionPlayer1; Score = 0 }
-        Player2 = { Position = givenPositionPlayer2; Score = 0 } 
+        Player2 = { Position = givenPositionPlayer2; Score = 0 }
     }
 
 let part2 (input) =
@@ -80,7 +80,7 @@ let part2 (input) =
     //Combines the current game state with all possible outcomes
     let nextGameStates (game: GameState): GameState list =
         possibleOutcomes
-        |> List.map (fun (sumOfDice, numberOfPossibilities) -> 
+        |> List.map (fun (sumOfDice, numberOfPossibilities) ->
             let updatedPosition = (game.Player.Position + sumOfDice) % 10
             let updatedPlayer = { game.Player with Position = updatedPosition; Score = game.Player.Score + updatedPosition + 1 }
             {
@@ -99,9 +99,9 @@ let part2 (input) =
             gamesInProgress
             |> List.collect nextGameStates
             |> List.partition (fun u -> u.Player1.Score < 21 && u.Player2.Score < 21)
-        
+
         let wonByPlayer1, wonByPlayer2 = finished |> List.partition _.Player1Playing
         gamesWon <- (fst gamesWon + (wonByPlayer1 |> List.sumBy _.Count), snd gamesWon + (wonByPlayer2 |> List.sumBy _.Count))
         gamesInProgress <- compress inProgress
-        
+
     gamesWon ||> max
