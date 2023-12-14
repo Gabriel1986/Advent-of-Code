@@ -36,7 +36,7 @@ let part1 (input) =
         let player = if player1Playing then game.Player1 else game.Player2
         let updatedPosition = (player.Position + nextSum) % 10
         let updatedScore = player.Score + updatedPosition + 1
-        let updatedPlayer = { player with Position = updatedPosition; Score = updatedScore }
+        let updatedPlayer = { Position = updatedPosition; Score = updatedScore }
         game <- {
             DieFace = nextDieFace
             DiceRolls = game.DiceRolls + 3
@@ -82,7 +82,7 @@ let part2 (input) =
         possibleOutcomes
         |> List.map (fun (sumOfDice, numberOfPossibilities) ->
             let updatedPosition = (game.Player.Position + sumOfDice) % 10
-            let updatedPlayer = { game.Player with Position = updatedPosition; Score = game.Player.Score + updatedPosition + 1 }
+            let updatedPlayer = { Position = updatedPosition; Score = game.Player.Score + updatedPosition + 1 }
             {
                 Player1Playing = not game.Player1Playing
                 Count = game.Count * numberOfPossibilities

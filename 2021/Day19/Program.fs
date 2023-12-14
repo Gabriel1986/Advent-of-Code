@@ -25,11 +25,6 @@ let private parseInput (input: string array): Scanner list =
     |> List.mapi (fun index beaconList -> { Id = index; Location = { X = 0; Y = 0; Z = 0 }; Beacons = beaconList |> List.rev })
 
 let alignScanner (alignedScanners: Scanner list) (scannerToAlign: Scanner) =
-    let multiply (scanner: Scanner) (timesX: int, timesY: int, timesZ: int) =
-        {
-            scanner with Beacons = scanner.Beacons |> List.map (fun point -> { point with X = point.X * timesX; Y = point.Y * timesY; Z = point.Z * timesZ })
-        }
-
     let toVectors (alignedPoints: Point list) (toAlignPoints: Point list): Point list =
         let subtract (alignedPoint: Point) (toAlignPoint: Point) =
             {
