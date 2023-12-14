@@ -2,7 +2,7 @@
 module Year2023Day12
 open System.Collections.Generic
 
-type NodePart1 =
+type Node =
     {
         I: int
         J: int
@@ -10,7 +10,7 @@ type NodePart1 =
         DistanceToGoal: int
         Elevation: int
     }
-    static member Create (i: int, j: int, previousNode: NodePart1 option, goal: int * int, heights: int[,]) =
+    static member Create (i: int, j: int, previousNode: Node option, goal: int * int, heights: int[,]) =
         {
             I = i
             J = j
@@ -25,7 +25,7 @@ type NodePart1 =
             if heights[i,j] > me.Elevation + 1 then
                 None
             else
-                Some (NodePart1.Create (i, j, Some me, goal, heights))
+                Some (Node.Create (i, j, Some me, goal, heights))
 
         [
             if me.I < maxI then createNode (me.I + 1, me.J)
@@ -53,13 +53,13 @@ let private parseHeightMap (input: string array) =
         |> int
     )
 
-    NodePart1.Create(fst start, snd start, None, goal, heightMap),
+    Node.Create(fst start, snd start, None, goal, heightMap),
     goal,
     heightMap
 
 //Had to use mutable collections as using immutable collections made this algorithm too slow :(
-let performShortestPathAlgorithm (maze: int[,], startNode: NodePart1, goal: int * int) =
-    let openNodes = new PriorityQueue<NodePart1, int> ()
+let performShortestPathAlgorithm (maze: int[,], startNode: Node, goal: int * int) =
+    let openNodes = new PriorityQueue<Node, int> ()
     let visitedNodes = new HashSet<int * int> ()
     let maxI = maze.GetUpperBound(0)
     let maxJ = maze.GetUpperBound(1)
