@@ -10,7 +10,7 @@ let private numberRegex = Regex(@"\d+")
 //Map of (year, day, part) to function
 let private allPrograms =
     let input (year) (day) (part) =
-        let path (fileName) = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, $"{year}", $"Day{day}", fileName)
+        let path (fileName) = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, $"{year}", $"Day{(string day).PadLeft(2, '0')}", fileName)
         match useTestData with
         | true ->
             if System.IO.File.Exists (path "Test.txt") then
