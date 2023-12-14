@@ -19,7 +19,7 @@ type NodePart1 =
             Elevation = heights[i, j]
         }
     member me.Heuristic = me.DistanceTraveled + me.DistanceToGoal - me.Elevation
-    member me.Neighbours (goal: int * int) (heights: int[,]) =
+    member me.Neighbours (goal: int * int) (heights: int[,]) (maxI: int, maxJ: int) =
         let maxI = heights.GetUpperBound(0)
         let maxJ = heights.GetUpperBound(1)
 
@@ -29,42 +29,6 @@ type NodePart1 =
                 None
             else
                 Some (NodePart1.Create (i, j, Some me, goal, heights))
-
-        [
-            if me.I < maxI then createNode (me.I + 1, me.J)
-            if me.J < maxJ then createNode (me.I, me.J + 1)
-            if me.I > 0 then createNode (me.I - 1, me.J)
-            if me.J > 0 then createNode (me.I, me.J - 1)
-        ]
-        |> List.choose id
-
-type NodePart2 =
-    {
-        I: int
-        J: int
-        DistanceTraveled: int
-        DistanceToGoal: int
-        Elevation: int
-    }
-    static member Create (i: int, j: int, previousNode: NodePart2 option, heights: int[,]) =
-        {
-            I = i
-            J = j
-            DistanceTraveled = match previousNode with None -> 0 | Some x -> x.DistanceTraveled + 1
-            DistanceToGoal = j
-            Elevation = heights[i, j]
-        }
-    member me.Heuristic = me.DistanceTraveled + me.DistanceToGoal + me.Elevation
-    member me.Neighbours (heights: int[,]) =
-        let maxI = heights.GetUpperBound(0)
-        let maxJ = heights.GetUpperBound(1)
-
-        let createNode (i: int, j: int) =
-            //Don't add the node if the elevation > current elevation + 1
-            if heights[i,j] < me.Elevation - 1 && heights[i, j] > me.Elevation + 1 then
-                None
-            else
-                Some (NodePart2.Create (i, j, Some me, heights))
 
         [
             if me.I < maxI then createNode (me.I + 1, me.J)
@@ -100,11 +64,13 @@ let private parseHeightMap (input: string array) =
 let performShortestPathAlgorithm (maze: int[,], startNode: NodePart1, goal: int * int) =
     let openNodes = new PriorityQueue<NodePart1, int> ()
     let visitedNodes = new HashSet<int * int> ()
+    let maxI = maze.GetUpperBound(0)
+    let maxJ = maze.GetUpperBound(1)
     let mutable minNode = startNode
 
     while not (minNode.I = fst goal && minNode.J = snd goal) do
         visitedNodes.Add (minNode.I, minNode.J) |> ignore
-        for neighbour in minNode.Neighbours goal maze do
+        for neighbour in minNode.Neighbours goal maze (maxI, maxJ) do
             if (not (visitedNodes.Contains (neighbour.I, neighbour.J))) then
                 openNodes.Enqueue(neighbour, neighbour.Heuristic)
         minNode <- openNodes.Dequeue()
