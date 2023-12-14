@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Helpers.fs" />
-    <Content Include="**\**\Input.txt" CopyToOutputDirectory="Always" />
+    <Content Include="**\**\Input.txt" Exclude="bin\**" CopyToOutputDirectory="Always" />
     <Content Include="**\**\Test*.txt" Exclude="bin\**" CopyToOutputDirectory="Always" />
     <Compile Include="**\**\Program.fs" />
     <Compile Include="Main.fs" />
