@@ -10,22 +10,23 @@ type Node =
         DistanceToGoal: int
         Elevation: int
     }
-    static member Create (i: int, j: int, previousNode: Node option, goal: int * int, heights: int[,]) =
+    static member Create (i: int, j: int, distanceTraveled: int, goal: int * int, elevation: int) =
         {
             I = i
             J = j
-            DistanceTraveled = match previousNode with None -> 0 | Some x -> x.DistanceTraveled + 1
+            DistanceTraveled = distanceTraveled
             DistanceToGoal =  abs (fst goal - i) + abs (snd goal - j)
-            Elevation = heights[i, j]
+            Elevation = elevation
         }
     member me.Heuristic = me.DistanceTraveled + me.DistanceToGoal - me.Elevation
     member me.Neighbours (goal: int * int) (heights: int[,]) (maxI: int, maxJ: int) =
         let createNode (i: int, j: int) =
+            let elevation = heights[i,j]
             //Don't add the node if the elevation > current elevation + 1
-            if heights[i,j] > me.Elevation + 1 then
+            if elevation > me.Elevation + 1 then
                 None
             else
-                Some (Node.Create (i, j, Some me, goal, heights))
+                Some (Node.Create (i, j, me.DistanceTraveled + 1, goal, elevation))
 
         [
             if me.I < maxI then createNode (me.I + 1, me.J)
@@ -53,7 +54,7 @@ let private parseHeightMap (input: string array) =
         |> int
     )
 
-    Node.Create(fst start, snd start, None, goal, heightMap),
+    Node.Create(fst start, snd start, 0, goal, 0),
     goal,
     heightMap
 
