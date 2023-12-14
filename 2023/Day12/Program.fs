@@ -20,9 +20,6 @@ type NodePart1 =
         }
     member me.Heuristic = me.DistanceTraveled + me.DistanceToGoal - me.Elevation
     member me.Neighbours (goal: int * int) (heights: int[,]) (maxI: int, maxJ: int) =
-        let maxI = heights.GetUpperBound(0)
-        let maxJ = heights.GetUpperBound(1)
-
         let createNode (i: int, j: int) =
             //Don't add the node if the elevation > current elevation + 1
             if heights[i,j] > me.Elevation + 1 then
