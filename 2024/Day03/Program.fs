@@ -24,8 +24,8 @@ let part2 (input: string[]): int =
     ||> Seq.fold (fun (multiply, sum) part ->
         if part.Value.StartsWith("mul") then
             let numbers = numberRegex.Matches(part.Value)
-            let result = if multiply = 0 then 0 else int numbers[0].Value * int numbers[1].Value
-            (multiply, result + sum)
+            let multiplication = multiply * int numbers[0].Value * int numbers[1].Value
+            (multiply, multiplication + sum)
         else
             ((if part.Value.StartsWith("don't") then 0 else 1), sum)
         )
