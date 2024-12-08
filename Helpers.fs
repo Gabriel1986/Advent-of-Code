@@ -3,6 +3,14 @@ module Helpers
     open System
     open System.Collections.Generic
 
+    module Math =
+        let BetweenInclusive (lowerBound: int) (upperBound: int) (value: int) =
+            value >= lowerBound && value <= upperBound
+
+        let Between (lowerBound: int) (upperBound: int) (value: int) =
+            value > lowerBound && value < upperBound
+
+
     module String =
         let joinWith (separator: string) (collectionOfStrings: IEnumerable<string>) =
             String.Join (separator, collectionOfStrings)
