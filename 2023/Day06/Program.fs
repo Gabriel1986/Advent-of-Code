@@ -22,8 +22,8 @@ let findNbSolutions (totalTime: bigint) (totalDistance: bigint) =
         if bigger - smaller <= bigint 3 then
             //Brute force it :)
             match limitType with
-            | LeftLimit -> { smaller..bigger  }
-            | RightLimit -> { smaller..bigger  } |> Seq.rev
+            | LeftLimit -> seq { smaller..bigger  }
+            | RightLimit -> seq { smaller..bigger  } |> Seq.rev
             |> Seq.find isBetterThanCurrentDistance
         else
             //Binary search
