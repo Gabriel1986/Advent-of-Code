@@ -30,11 +30,7 @@ let parseInput (input: string[]) =
         |> Array.distinct
         |> Array.toList
 
-    let mapOfDestinations =
-        nodes
-        |> Map.ofArray
-
-    mapOfDestinations, destinations
+    Map.ofArray nodes, destinations
 
 let part1 (input: string[]) =
     let distanceMap, destinations = parseInput input
