@@ -1,24 +1,35 @@
 ﻿module Program
 open System
+open System.IO
 open System.Reflection
 open System.Text.RegularExpressions
 
 let mutable useTestData = false
-
 let private numberRegex = Regex(@"\d+")
+
+type ExecutionResult =
+    {
+        Answer: obj
+        Elapsed: TimeSpan
+        Year: int
+        Day: int
+        Part: int
+    }
+    member me.Print() =
+        printfn "Year %A - Day %s - Part %A - Elapsed: %sms - Answer: %A" me.Year ((string me.Day).PadLeft(2)) me.Part ((sprintf "%.4f" me.Elapsed.TotalMilliseconds).PadLeft(9)) me.Answer
 
 //Map of (year, day, part) to function
 let private allPrograms =
     let input (year) (day) (part) =
-        let path (fileName) = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, $"{year}", $"Day{(string day).PadLeft(2, '0')}", fileName)
+        let path (fileName: string) = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{year}", $"Day{(string day).PadLeft(2, '0')}", fileName)
         match useTestData with
         | true ->
-            if System.IO.File.Exists (path "Test.txt") then
-                System.IO.File.ReadAllLines (path "Test.txt")
+            if File.Exists (path "Test.txt") then
+                File.ReadAllLines (path "Test.txt")
             else
-                System.IO.File.ReadAllLines (path $"TestPart{part}.txt")
+                File.ReadAllLines (path $"TestPart{part}.txt")
         | false ->
-            System.IO.File.ReadAllLines (path "Input.txt")
+            File.ReadAllLines (path "Input.txt")
 
     Assembly.GetExecutingAssembly().GetTypes()
     |> Array.collect (fun typ ->
@@ -36,41 +47,54 @@ let private allPrograms =
         )
     )
 
-
-let execute ((year, day, part), fn: unit -> obj) =
+let execute (nbIterations: int) ((year: int, day: int, part: int), fn: unit -> obj) =
     let timeStamp = DateTime.Now
     let answer = fn ()
-    let elapsed = DateTime.Now - timeStamp
-    printfn "Year %A - Day %s - Part %A - Elapsed: %sms - Answer: %A" year ((string day).PadLeft(2)) part ((sprintf "%.4f" elapsed.TotalMilliseconds).PadLeft(9)) answer
 
-let executeSpecificPart (year: string, day: string, part: string) =
+    if nbIterations > 1 then
+        seq { 2..nbIterations } |> Seq.iter (fun _ -> fn () |> ignore)
+    
+    let elapsed = DateTime.Now - timeStamp
+
+    let result = {
+        Year = year
+        Day = day
+        Part = part
+        Answer = answer
+        Elapsed = if nbIterations > 1 then elapsed.Divide(nbIterations) else elapsed
+    }
+
+    result.Print()
+    
+
+let executeSpecificPart (nbIterations: int) (year: string, day: string, part: string) =
     match allPrograms |> Array.tryFind (fst >> (=) (int year, int day, int part)) with
     | None ->
         failwith $"Function on year {year}, day {day}, part {part} not found.."
     | Some found ->
-        execute found
+        execute nbIterations found
 
-let executeYear (runForYear) =
+let executeYear (nbIterations: int) (runForYear: string) =
     allPrograms
     |> Array.filter (fun ((year, _, _), _) -> string year = runForYear)
     |> Array.sortBy fst
-    |> Array.iter execute
+    |> Array.iter (execute nbIterations)
 
-let executeDay (year: string, day: string) =
+let executeDay (nbIterations: int) (year: string, day: string) =
     allPrograms
     |> Array.filter (fun ((y, d, _), _) -> string y = year && string d = day)
     |> Array.sortBy fst
-    |> Array.iter execute
+    |> Array.iter (execute nbIterations)
 
-let executeLatest () =
+let getLatestProgram () =
     allPrograms
     |> Array.maxBy fst
-    |> execute
+    |> fun ((year, day, month), _) -> (string year, string day, string month)
 
-let executeAll () =
+let executeAll (nbIterations: int) =
     allPrograms
     |> Array.sortBy fst
-    |> Array.iter execute
+    |> Array.iter (execute nbIterations)
 
 [<EntryPoint>]
 let main args =
@@ -81,30 +105,48 @@ let main args =
     printfn "'dotnet run <year> <day>' for running the solution for the specific day of the given year"
     printfn "'dotnet run <year> <day> <part>' to run the solution for the specific year, day and part"
     printfn "'dotnet run test <arguments>' to run the solution with any args, but with the given test input"
+    printfn "'dotnet run benchmark <arguments> to run the latest solution multiple times and return an average result'"
     printfn "----------------------------------------------------------------------------"
 
     useTestData <- args |> Array.exists ((=) "test")
+    let useBenchmark = args |> Array.exists ((=) "benchmark")
+    let nbIterations = if useBenchmark then 10 else 1
 
-    match args |> Array.filter ((<>) "test") with
+    let startOfSentence = 
+        seq {
+            "Running"
+
+            if useBenchmark then
+                "benchmark"
+
+            if useTestData then
+                "test"
+
+            "solution"
+        }
+        |> String.joinWith " "
+
+    match args |> Array.filter (fun x -> x <> "test" && x <> "benchmark") with
     | [| "all" |] | [| "All" |] ->
-        printfn "Running solution for all"
+        printfn "%s for all" startOfSentence
         printfn ""
-        executeAll ()
+        executeAll nbIterations
     | [| year |] ->
-        printfn "Running solutions for year '%s'" year
+        printfn "%s for year '%s'" startOfSentence year
         printfn ""
-        executeYear year
+        executeYear nbIterations year
     | [| year; day |] ->
-        printfn "Running solution for year '%s', day '%s'" year day
+        printfn "%s for year '%s', day '%s'" startOfSentence year day
         printfn ""
-        executeDay (year, day)
+        executeDay nbIterations (year, day)
     | [| year; day; part |] ->
-        printfn "Running solution for year '%s', day '%s', part '%s'" year day part
+        printfn "%s for year '%s', day '%s', part '%s'" startOfSentence year day part
         printfn ""
-        executeSpecificPart (year, day, part)
+        executeSpecificPart nbIterations (year, day, part)
     | other ->
-        printfn "Running latest solution..."
+        let (year, day, part) = getLatestProgram ()
+        printfn "%s for year '%s', day '%s', part '%s'" startOfSentence year day part
         printfn ""
-        executeLatest ()
+        executeSpecificPart nbIterations (year, day, part)
 
     0
