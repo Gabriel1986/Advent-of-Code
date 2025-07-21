@@ -1,152 +1,158 @@
 ﻿/// https://adventofcode.com/2021/day/18
 module Year2021Day18
+
 open System
-open System.Text.RegularExpressions
 
-type Node = {
-    Left: NodeType
-    Right: NodeType
-}
-and NodeType =
-    | Node of Node
+type NodeType =
     | Value of int
+    | Node of Node
 
-let depthsAndIndexesOfBrackets (str: string) =
-    str
-    |> Seq.indexed
-    |> Seq.fold (fun (depthsAndIndexes, currentDepth) (index, next) ->
-        match next with
-        | '[' -> (currentDepth, index)::depthsAndIndexes, currentDepth + 1
-        | ']' -> (currentDepth-1, index)::depthsAndIndexes, currentDepth - 1
-        | other -> depthsAndIndexes, currentDepth
-    ) ([], 0)
-    |> (fst >> List.rev)
+and Node =
+    { Left: NodeType
+      Right: NodeType }
 
-let parseNode (str: string): Node =
-    let rec parseNode (str: string): NodeType =
+/// Result type for explosion
+type ExplodeResult = {
+    DidExplode: bool
+    LeftCarry: int option
+    RightCarry: int option
+    NewNode: NodeType
+}
 
-        let relevantIndexes = str |> depthsAndIndexesOfBrackets |> List.choose (fun (depth, index) -> if depth = 1 then Some index else None)
+/// Result type for splitting
+type SplitResult = {
+    DidSplit: bool
+    NewNode: NodeType
+}
 
-        let parseInt (character: char) = int (string character)
-        let leftNode, rightNode =
-            match relevantIndexes.Length with
-            | 4 ->
-                let leftNode = parseNode (str[relevantIndexes[0]..relevantIndexes[1]])
-                let rightNode = parseNode (str[relevantIndexes[2]..relevantIndexes[3]])
-                leftNode, rightNode
-            | 2 ->
-                if relevantIndexes[0] = 1 then
-                    let leftNode = parseNode(str[relevantIndexes[0]..relevantIndexes[1]])
-                    let rightNode = Value (parseInt str[str.Length - 2])
-                    leftNode, rightNode
-                else
-                    let leftNode = Value (parseInt str[1])
-                    let rightNode = parseNode (str[relevantIndexes[0]..relevantIndexes[1]])
-                    leftNode, rightNode
-            | 0 ->
-                let leftNode = Value (parseInt str[1])
-                let rightNode = Value (parseInt str[str.Length-2])
-                leftNode, rightNode
-            | _ ->
-                failwithf "Failed to match []"
+/// Immutable add to leftmost value in a tree
+let rec addToLeftMost (node: NodeType) (value: int) : NodeType =
+    match node with
+    | Value v -> Value (v + value)
+    | Node n -> Node { n with Left = addToLeftMost n.Left value }
 
-        Node { Left = leftNode; Right = rightNode }
+/// Immutable add to rightmost value in a tree
+let rec addToRightMost (node: NodeType) (value: int) : NodeType =
+    match node with
+    | Value v -> Value (v + value)
+    | Node n -> Node { n with Right = addToRightMost n.Right value }
 
-    match parseNode (str) with
-    | Value v -> failwithf "Unexpected input: %i" v
-    | Node node -> node
-
-let private hasExplosion (str: string) =
-    match depthsAndIndexesOfBrackets str |> List.filter (fun (depth, _) -> depth > 3) with
-    | [] -> None
-    | x::y::_ -> Some [ snd x; snd y ]
-    | other -> failwithf "Failed to parse explosion: %A" other
-
-let private hasSplit (str: string) =
-    let m = Regex.Match(str, "\d\d")
-    if m.Success then Some m.Value else None
-
-let private findLastNumberRegex = new Regex("\d+", RegexOptions.RightToLeft ||| RegexOptions.Compiled)
-let private findFirstNumberRegex = new Regex("\d+", RegexOptions.Compiled)
-
-let private tryExplode (str: string) =
-    match hasExplosion str with
-    | Some explosion ->
-        let toSplit = str[explosion[0]+1..explosion[1]-1]
-        let splitExplosion = toSplit.Split(",")
-        let leftValue = int splitExplosion[0]
-        let rightValue = int splitExplosion[1]
-
-        let firstPart =
-            let partial = str[0..explosion[0]-1]
-            let m = findLastNumberRegex.Match(partial)
-            if m.Success then
-                let toReplace = int(m.Value)
-                findLastNumberRegex.Replace(partial, string (toReplace + leftValue), 1)
+/// Try to explode a node at given depth
+let rec tryExplode (node: NodeType) (depth: int) : ExplodeResult =
+    match node with
+    | Value _ -> 
+        { DidExplode = false; LeftCarry = None; RightCarry = None; NewNode = node }
+    | Node n when depth >= 4 ->
+        match n.Left, n.Right with
+        | Value l, Value r -> 
+            { DidExplode = true; LeftCarry = Some l; RightCarry = Some r; NewNode = Value 0 }
+        | _ -> 
+            { DidExplode = false; LeftCarry = None; RightCarry = None; NewNode = node }
+    | Node n ->
+        let leftResult: ExplodeResult = tryExplode n.Left (depth + 1)
+        if leftResult.DidExplode then
+            let newRight: NodeType =
+                match leftResult.RightCarry with
+                | Some v -> addToLeftMost n.Right v
+                | None -> n.Right
+            { DidExplode = true
+              LeftCarry = leftResult.LeftCarry
+              RightCarry = None
+              NewNode = Node { Left = leftResult.NewNode; Right = newRight } }
+        else
+            let rightResult: ExplodeResult = tryExplode n.Right (depth + 1)
+            if rightResult.DidExplode then
+                let newLeft: NodeType =
+                    match rightResult.LeftCarry with
+                    | Some v -> addToRightMost n.Left v
+                    | None -> n.Left
+                { DidExplode = true
+                  LeftCarry = None
+                  RightCarry = rightResult.RightCarry
+                  NewNode = Node { Left = newLeft; Right = rightResult.NewNode } }
             else
-                partial
+                { DidExplode = false; LeftCarry = None; RightCarry = None; NewNode = node }
 
-        let secondPart =
-            let partial = str[explosion[1]+1..]
-            let m = findFirstNumberRegex.Match(partial)
-            if m.Success then
-                let toReplace = int(m.Value)
-                findFirstNumberRegex.Replace(partial, string (toReplace + rightValue), 1, m.Index)
+/// Try to split a node
+let rec trySplit (node: NodeType) : SplitResult =
+    match node with
+    | Value v when v >= 10 ->
+        let leftVal: int = v / 2
+        let rightVal: int = (v + 1) / 2
+        { DidSplit = true
+          NewNode = Node { Left = Value leftVal; Right = Value rightVal } }
+    | Value _ ->
+        { DidSplit = false; NewNode = node }
+    | Node n ->
+        let leftResult: SplitResult = trySplit n.Left
+        if leftResult.DidSplit then
+            { DidSplit = true
+              NewNode = Node { n with Left = leftResult.NewNode } }
+        else
+            let rightResult: SplitResult = trySplit n.Right
+            if rightResult.DidSplit then
+                { DidSplit = true
+                  NewNode = Node { n with Right = rightResult.NewNode } }
             else
-                partial
+                { DidSplit = false; NewNode = node }
 
-        let exploded = firstPart + "0" + secondPart
-        Some exploded
-    | None ->
-        None
+/// Reduce a snailfish number by repeatedly exploding and splitting
+let rec reduce (node: NodeType) : NodeType =
+    let explodeResult: ExplodeResult = tryExplode node 0
+    if explodeResult.DidExplode then
+        reduce explodeResult.NewNode
+    else
+        let splitResult: SplitResult = trySplit node
+        if splitResult.DidSplit then
+            reduce splitResult.NewNode
+        else
+            node
 
-let private trySplit (str: string) =
-    match hasSplit str with
-    | Some splittable ->
-        let toSplit = Double.Parse(splittable)
-        let regex = new Regex(splittable)
-        let split = regex.Replace(str, $"[%i{Math.Floor(toSplit/2.) |> int},%i{Math.Ceiling(toSplit/2.) |> int}]", 1)
-        Some split
-    | None ->
-        None
+/// Add two snailfish numbers and reduce
+let add (left: NodeType) (right: NodeType) : NodeType =
+    reduce (Node { Left = left; Right = right })
 
-let rec tryExplodeOrSplit (str: string) =
-    match str |> tryExplode |> Option.orElse (trySplit str) with
-    | Some explodedOrSplit -> tryExplodeOrSplit explodedOrSplit
-    | None -> str
+/// Compute magnitude of a snailfish number
+let rec magnitude (node: NodeType) : int =
+    match node with
+    | Value v -> v
+    | Node n -> 3 * magnitude n.Left + 2 * magnitude n.Right
 
-let private addNode (str: string) (next: string) =
-    tryExplodeOrSplit $"[{str},{next}]"
+/// Parse a snailfish number from string into a NodeType
+let parse (input: string) : NodeType =
+    let chars: char[] = input.ToCharArray()
 
-let calculateMagnitude (str: string) =
-    let rec calculateMagnitude (node: Node) =
-        let left =
-            match node.Left with
-            | Node node -> calculateMagnitude node
-            | Value value -> value
+    let rec parseInternal (index: int) : NodeType * int =
+        match chars.[index] with
+        | '[' ->
+            let left, afterLeft = parseInternal (index + 1)
+            let afterComma = afterLeft + 1 // skip ','
+            let right, afterRight = parseInternal afterComma
+            let afterBracket = afterRight + 1 // skip ']'
+            Node { Left = left; Right = right }, afterBracket
+        | c when System.Char.IsDigit c -> Value (int (string c)), index + 1
+        | other -> failwithf "Unexpected character %c at position %d" other index
 
-        let right =
-            match node.Right with
-            | Node node -> calculateMagnitude node
-            | Value value -> value
+    let tree, _ = parseInternal 0
+    tree
 
-        3 * left +  2 * right
-    calculateMagnitude (parseNode str)
+/// Part 1 and 2 using immutable trees
 
 let part1 (input: string array) =
-    let result =
-        input
-        |> Array.skip 1
-        |> Array.fold addNode input[0]
-
-    calculateMagnitude result
+    input
+    |> Array.map parse
+    |> Array.reduce add
+    |> magnitude
 
 let part2 (input: string array) =
-    input
-    |> Array.map (fun node ->
-        input
-        |> Array.filter ((<>) node)
-        |> Array.map (addNode node >> calculateMagnitude)
+    let snailfishNumbers = input |> Array.map parse
+    
+    snailfishNumbers
+    |> Array.Parallel.mapi (fun i left ->
+        snailfishNumbers
+        |> Array.Parallel.mapi (fun j right ->
+            if i <> j then magnitude (add left right) else Int32.MinValue
+        )
         |> Array.max
     )
     |> Array.max
