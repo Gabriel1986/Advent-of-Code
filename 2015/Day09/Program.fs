@@ -33,7 +33,7 @@ let calculateTotalDistance (dictionary: Map<(string * string), int>) (permutatio
     |> List.windowed 2
     |> List.sumBy (fun permutation -> getDistance permutation[0] permutation[1])
 
-let mapOfDestinations (input: string[]) =
+let parseInput (input: string[]) =
     input
     |> Array.map parseNode
     |> Map.ofArray
@@ -46,7 +46,7 @@ let allDestinations (mapOfDestinations: Map<(string * string), int>) =
     |> List.ofSeq
 
 let part1 (input: string[]) =
-    let mapOfDestinations = mapOfDestinations input
+    let mapOfDestinations = parseInput input
 
     (Int32.MaxValue, permute (allDestinations mapOfDestinations))
     ||> Seq.fold (fun minDistance next ->
@@ -54,9 +54,9 @@ let part1 (input: string[]) =
         if totalDistance < minDistance then totalDistance else minDistance)
 
 let part2 (input: string[]) =
-    let mapOfDestinations = mapOfDestinations input
+    let mapOfDestinations = parseInput input
 
     (Int32.MinValue, permute (allDestinations mapOfDestinations))
-    ||> Seq.fold (fun minDistance next ->
+    ||> Seq.fold (fun maxDistance next ->
         let totalDistance = calculateTotalDistance mapOfDestinations next
-        if totalDistance > minDistance then totalDistance else minDistance)
+        if totalDistance > maxDistance then totalDistance else maxDistance)
