@@ -4,7 +4,7 @@ Wrote some solutions for Advent of Code (https://adventofcode.com) in F#.
 
 ## Run the code
 
-Install .net 8.0, then in a console:
+Install .net 9.0, then in a console:
 
 ```
 dotnet run
