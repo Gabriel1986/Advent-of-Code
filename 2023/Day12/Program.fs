@@ -1,108 +1,138 @@
 /// https://adventofcode.com/2023/day/12
 module Year2023Day12
+
 open System.Collections.Generic
 
-type Node =
-    {
-        I: int
-        J: int
-        DistanceTraveled: int
-        DistanceToGoal: int
-        Elevation: int
-    }
-    static member Create (i: int, j: int, distanceTraveled: int, goal: int * int, elevation: int) =
-        {
-            I = i
-            J = j
-            DistanceTraveled = distanceTraveled
-            DistanceToGoal =  abs (fst goal - i) + abs (snd goal - j)
-            Elevation = elevation
+// Converts characters to elevations
+let private charToHeight (c: char) : int =
+    match c with
+    | 'S' -> 0
+    | 'E' -> 25
+    | _ -> int c - int 'a'
+
+// Parses the input map into coordinates and elevation matrix
+let private parseHeightMap (input: string array) : (int * int) * (int * int) * int[,] =
+    let rows = input.Length
+    let cols = input.[0].Length
+    let heights = Array2D.zeroCreate<int> rows cols
+
+    // Initial start and goal positions
+    let initialStart = -1, -1
+    let initialGoal = -1, -1
+
+    let (start, goal) =
+        seq {
+            for i in 0 .. rows - 1 do
+                for j in 0 .. cols - 1 do
+                    yield i, j, input.[i].[j]
         }
-    member me.Heuristic = me.DistanceTraveled + me.DistanceToGoal - me.Elevation
-    member me.Neighbours (goal: int * int) (heights: int[,]) (maxI: int, maxJ: int) =
-        let createNode (i: int, j: int) =
-            let elevation = heights[i,j]
-            //Don't add the node if the elevation > current elevation + 1
-            if elevation > me.Elevation + 1 then
-                None
-            else
-                Some (Node.Create (i, j, me.DistanceTraveled + 1, goal, elevation))
+        |> Seq.fold (fun (s, g) (i, j, c) ->
+            heights.[i, j] <- charToHeight c
+            match c with
+            | 'S' -> ((i, j), g)
+            | 'E' -> (s, (i, j))
+            | _ -> (s, g)
+        ) (initialStart, initialGoal)
 
-        [
-            if me.I < maxI then createNode (me.I + 1, me.J)
-            if me.J < maxJ then createNode (me.I, me.J + 1)
-            if me.I > 0 then createNode (me.I - 1, me.J)
-            if me.J > 0 then createNode (me.I, me.J - 1)
-        ]
-        |> List.choose id
+    start, goal, heights
 
-let private parseHeightMap (input: string array) =
-    let mutable start = (0, 0)
-    let mutable goal = (0, 0)
-    let heightMap = Array2D.init input.Length input[0].Length (fun i j ->
-        let character = input[i][j]
-        match character with
-        | 'S' ->
-            start <- (i, j)
-            'a'
-        | 'E' ->
-            goal <- (i, j)
-            'z'
-        | otherCharacter ->
-            otherCharacter
-        |> fun character -> character - 'a'
-        |> int
-    )
+// Dijkstra’s algorithm to find shortest path from start to goal with allowed climbing
+let private dijkstra (start: int * int) (goal: int * int) (heights: int[,]) : int option =
+    let maxI = heights.GetLength(0)
+    let maxJ = heights.GetLength(1)
+    let visited = Array2D.create<bool> maxI maxJ false
+    let distances = Array2D.create<int option> maxI maxJ None
+    let queue = new PriorityQueue<(int * int), int>() // ((i, j), dist)
+    let mutable dist: int option = None
 
-    Node.Create(fst start, snd start, 0, goal, 0),
-    goal,
-    heightMap
+    let (si, sj) = start
+    distances[si, sj] <- Some 0
+    queue.Enqueue( (si, sj), 0)
 
-//Had to use mutable collections as using immutable collections made this algorithm too slow :(
-let performShortestPathAlgorithm (maze: int[,], startNode: Node, goal: int * int) =
-    let openNodes = new PriorityQueue<Node, int> ()
-    let visitedNodes = new HashSet<int * int> ()
-    let maxI = maze.GetUpperBound(0)
-    let maxJ = maze.GetUpperBound(1)
-    let mutable minNode = startNode
-
-    while not (minNode.I = fst goal && minNode.J = snd goal) do
-        visitedNodes.Add (minNode.I, minNode.J) |> ignore
-        for neighbour in minNode.Neighbours goal maze (maxI, maxJ) do
-            if (not (visitedNodes.Contains (neighbour.I, neighbour.J))) then
-                openNodes.Enqueue(neighbour, neighbour.Heuristic)
-        minNode <- openNodes.Dequeue()
-
-    minNode.DistanceTraveled
-
-let part1 (input) =
-    let (start, goal, heights) = parseHeightMap(input)
-    performShortestPathAlgorithm(heights, start, goal)
-
-//Taking advantage of the unique lay-out of the input
-//1) The shortest path is always either up or down and not right or left from the start
-//2) When going further up than the minimum up, we won't get a shorter route
-//3) When going further down than the minimum down, we won't get a shorter route
-let part2 (input) =
-    let (start, goal, heights) = parseHeightMap(input)
-    let mutable minDistance = performShortestPathAlgorithm(heights, start, goal)
-
-    let rec searchUp (i: int) =
-        let localMinDistance = performShortestPathAlgorithm(heights, { start with I = start.I + i }, goal)
-        if localMinDistance <= minDistance then
-            minDistance <- localMinDistance
-            searchUp (i + 1)
-        else
+    while queue.Count > 0 do
+        match queue.TryDequeue() with
+        | false, _, _ ->
             ()
+        | true, (i, j), distanceSoFar ->
+            if not visited[i, j] then
+                visited[i, j] <- true
+                if (i, j) = goal then
+                    dist <- Some distanceSoFar
+                let currentElevation = heights[i, j]
+                for (di, dj) in [(-1, 0); (1, 0); (0, -1); (0, 1)] do
+                    let ni, nj = i + di, j + dj
+                    if ni >= 0 && ni < maxI && nj >= 0 && nj < maxJ then
+                        let nextElevation = heights[ni, nj]
+                        if nextElevation <= currentElevation + 1 then
+                            let newDist = distanceSoFar + 1
+                            match distances[ni, nj] with
+                            | None ->
+                                distances[ni, nj] <- Some newDist
+                                queue.Enqueue((ni, nj), newDist)
+                            | Some existing when newDist < existing ->
+                                distances[ni, nj] <- Some newDist
+                                queue.Enqueue((ni, nj), newDist)
+                            | _ -> ()
 
-    let rec searchDown (i: int) =
-        let localMinDistance = performShortestPathAlgorithm(heights, { start with I = start.I - i }, goal)
-        if localMinDistance <= minDistance then
-            minDistance <- localMinDistance
-            searchDown (i + 1)
-        else
+    dist
+
+// Reverse Dijkstra: compute distance from goal to all cells going "downhill"
+let private reverseDijkstra (goal: int * int) (heights: int[,]) : Option<int>[,] =
+    let maxI = heights.GetLength(0)
+    let maxJ = heights.GetLength(1)
+    let distances = Array2D.init maxI maxJ (fun _ _ -> None)
+    let visited = Array2D.create maxI maxJ false
+    let queue = PriorityQueue<(int * int), int>() // ((i, j), distance)
+
+    let (gi, gj) = goal
+    distances[gi, gj] <- Some 0
+    queue.Enqueue((gi, gj), 0)
+
+    while queue.Count > 0 do
+        match queue.TryDequeue () with
+        | false, _, _ ->
             ()
+        | true, (i, j), dist ->
+            if not visited[i, j] then
+                visited[i, j] <- true
+                let currentElevation = heights[i, j]
+                for (di, dj) in [(-1, 0); (1, 0); (0, -1); (0, 1)] do
+                    let ni, nj = i + di, j + dj
+                    if ni >= 0 && ni < maxI && nj >= 0 && nj < maxJ then
+                        let nextElevation = heights[ni, nj]
+                        if nextElevation >= currentElevation - 1 then
+                            let newDist = dist + 1
+                            match distances[ni, nj] with
+                            | None ->
+                                distances[ni, nj] <- Some newDist
+                                queue.Enqueue((ni, nj), newDist)
+                            | Some existing when newDist < existing ->
+                                distances[ni, nj] <- Some newDist
+                                queue.Enqueue((ni, nj), newDist)
+                            | _ -> ()
 
-    searchUp (1)
-    searchDown (1)
-    minDistance
+    distances
+
+// Part 1: shortest path from 'S' to 'E' using regular Dijkstra
+let part1 (input: string array) : int =
+    let (start, goal, heights) = parseHeightMap input
+    match dijkstra start goal heights with
+    | Some d -> d
+    | None -> failwith "No path found from start to goal"
+
+// Part 2: shortest path from any 'a' (elevation 0) to 'E', using reverse Dijkstra
+let part2 (input: string array) : int =
+    let (_, goal, heights) = parseHeightMap input
+    let distances = reverseDijkstra goal heights
+    let maxI = heights.GetLength(0)
+    let maxJ = heights.GetLength(1)
+
+    seq {
+        for i in 0 .. maxI - 1 do
+            for j in 0 .. maxJ - 1 do
+                if heights[i, j] = 0 then
+                    match distances[i, j] with
+                    | Some d -> yield d
+                    | None -> ()
+    }
+    |> Seq.min
