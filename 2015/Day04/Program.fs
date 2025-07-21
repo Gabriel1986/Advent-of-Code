@@ -1,3 +1,4 @@
+/// https://adventofcode.com/2015/day/4
 module Year2015Day4
 
 open System
