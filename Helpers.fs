@@ -20,11 +20,25 @@ module Helpers
         let multiplyBy (projection: 'T -> int) = Seq.map projection >> multiply
 
     module List =
-        let take' n (list: int list) =
+        let take' n (list: 'a list) =
             if n > list.Length then
                 list
             else
                 list |> List.take n
+
+        let rec permute (list: 'a list) : seq<'a list> = 
+            seq {
+                match list with
+                | [] -> yield []
+                | _ ->
+                    for i in 0 .. List.length list - 1 do
+                        let x = list.[i]
+                        // Exclude element at index i to get the rest of the list
+                        let rest = list.[..i-1] @ list.[i+1..]
+                        // Recursively get permutations of the rest
+                        for perm in permute rest do
+                            yield x :: perm
+            }
 
     let private binaryConversionMap = Map [
         '0', "0000"
