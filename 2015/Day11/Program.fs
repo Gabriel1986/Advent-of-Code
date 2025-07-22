@@ -37,7 +37,12 @@ let rec countPairs (arr: int[]) (currentIndex: int) (lastPairIdx: int) (currentC
             countPairs arr (currentIndex + 1) lastPairIdx currentCount
 
 let runAlgorithm (input: int[]) =
-    let applyRule1 (arr: _[]) =
+    if input |> Array.exists (fun ch -> forbiddenCharacters.Contains(ch)) then
+        let idx = input |> Array.findIndex (fun ch -> forbiddenCharacters.Contains(ch))
+        do resetArrayAfter input idx
+        input[idx] <- input[idx] + 1
+
+    let hasIncrementalCharacters (arr: _[]) =
         let mutable i = 2
         let mutable found = false
         while i < arr.Length && not found do
@@ -45,32 +50,23 @@ let runAlgorithm (input: int[]) =
             i <- i + 1
         found
 
-    let applyRule2 (arr: int[]) =
-        arr
-        |> Array.exists (fun ch -> forbiddenCharacters.Contains(ch))
-        |> not
-
-    let applyRule3 (arr: int[]) =
-        countPairs arr 1 -1 0 
-        |> fun c -> c >= 2
-
-    if input |> Array.exists (fun ch -> forbiddenCharacters.Contains(ch)) then
-        let idx = input |> Array.findIndex (fun ch -> forbiddenCharacters.Contains(ch))
-        do resetArrayAfter input idx
-        input[idx] <- input[idx] + 1
+    let hasTwoDuplicates (arr: int[]) =
+        let rec loop i pairs =
+            if i >= arr.Length then false
+            elif arr[i] = arr[i - 1] then
+                let newPairs = pairs + 1
+                if newPairs = 2 then true
+                else loop (i + 2) newPairs
+            else
+                loop (i + 1) pairs
+        loop 1 0
 
     let rec findNextPassword (array: int[]) =
         do increment array
 
-        let hasFinalResult =
-            [ applyRule1; applyRule2; applyRule3 ]
-            |> List.forall (fun fn -> fn array)
-
-        //printfn "Intermediate result: %A" (new string(array.Select(char).ToArray()))
-
-        if hasFinalResult then
+        if hasIncrementalCharacters array && hasTwoDuplicates array then
             array
-        else        
+        else
             findNextPassword array
 
     findNextPassword input
