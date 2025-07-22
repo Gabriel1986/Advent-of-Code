@@ -24,6 +24,7 @@ type ExecutionResult =
 
 type Program = 
     {
+        SortKey: (int * int * int * bool)
         Input: Input
         Invoke: string[] -> obj
     }
@@ -38,12 +39,12 @@ type Program =
         | false ->
             path "Input.txt"
 
-let private allPrograms =
+let private allPrograms () =
     Assembly.GetExecutingAssembly().GetTypes()
     |> Array.collect (fun typ ->
         typ.GetMethods()
         |> Array.choose (fun each ->
-            if typ.Name.StartsWith "Year" && each.Name.StartsWith "part" then
+            if typ.Name.StartsWith "Year" && (each.Name.StartsWith "part" || (useTestData && each.Name.StartsWith "testPart")) then
                 let typeNameMatches = numberRegex.Matches(typ.Name)
                 let dayPartMatches = numberRegex.Matches(each.Name)
                 let year = int typeNameMatches[0].Value
@@ -51,6 +52,7 @@ let private allPrograms =
                 let part = int dayPartMatches[0].Value
                 let input = { Year = year; Day = day; Part = part }
                 Some {
+                    SortKey = (year, day, part, each.Name.StartsWith("part"))
                     Input = input
                     Invoke = fun file -> each.Invoke (typ, [| file |])
                 }
@@ -58,6 +60,8 @@ let private allPrograms =
                 None
         )
     )
+    |> Array.sortBy _.SortKey
+    |> Array.distinctBy _.Input
 
 let execute (nbIterations: int) (program: Program) =
     let file = File.ReadAllLines program.FilePath
@@ -80,31 +84,28 @@ let execute (nbIterations: int) (program: Program) =
     
 
 let executeSpecificPart (nbIterations: int) (year: string, day: string, part: string) =
-    match allPrograms |> Array.tryFind (_.Input >> (=) { Year = int year; Day = int day; Part = int part }) with
+    match allPrograms () |> Array.tryFind (_.Input >> (=) { Year = int year; Day = int day; Part = int part }) with
     | None ->
         failwith $"Function on year {year}, day {day}, part {part} not found.."
     | Some found ->
         execute nbIterations found
 
 let executeYear (nbIterations: int) (runForYear: string) =
-    allPrograms
+    allPrograms ()
     |> Array.filter (_.Input >> fun input -> string input.Year = runForYear)
-    |> Array.sortBy _.Input
     |> Array.iter (execute nbIterations)
 
 let executeDay (nbIterations: int) (year: string, day: string) =
-    allPrograms
+    allPrograms ()
     |> Array.filter (_.Input >> fun input -> string input.Year = year && string input.Day = day)
-    |> Array.sortBy _.Input
     |> Array.iter (execute nbIterations)
 
 let getLatestProgram () =
-    allPrograms
+    allPrograms ()
     |> Array.maxBy _.Input
 
 let executeAll (nbIterations: int) =
-    allPrograms
-    |> Array.sortBy _.Input
+    allPrograms ()
     |> Array.iter (execute nbIterations)
 
 [<EntryPoint>]
