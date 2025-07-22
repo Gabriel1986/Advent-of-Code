@@ -6,7 +6,7 @@ open System.Linq
 
 //Once again I had to go with a mutable class to avoid creating a new sequence all the time.
 let evolve (input: ResizeArray<int>): ResizeArray<int> =
-    let result = ResizeArray<int>()
+    let result = ResizeArray<int>(input.Count * 2)
 
     //Had to use recursion as folding over the input is about 3x slower.
     let rec loop index current count =
@@ -30,18 +30,18 @@ let parse (str: string) =
     |> Array.map (string >> Int32.Parse)
     |> fun x -> new ResizeArray<int>(x)
 
-let runPart1 (input: string[]) (iterations: int) =
+let runAlgorithm (input: string[]) (iterations: int) =
     let parsed = parse input[0]
     (parsed, seq { 1..iterations })
     ||> Seq.fold (fun acc _ -> evolve acc)
 
 let testPart1 (input: string[]) =
-    runPart1 input 1
+    runAlgorithm input 1
 
 let part1 (input: string[]) =
-    runPart1 input 40
+    runAlgorithm input 40
     |> Seq.length
 
 let part2 (input: string[]) =
-    runPart1 input 50
+    runAlgorithm input 50
     |> Seq.length
