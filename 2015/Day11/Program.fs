@@ -12,12 +12,12 @@ let inline resetArrayAfter (array: int[]) (index: int) =
     for clearingIndex = index + 1 to array.Length - 1 do
         array[clearingIndex] <- a
 
-let inline increment (array: int[]) =
-    let rec incrementRec (index: int) =
+let inline incrementPassword (array: int[]) =
+    let rec loop (index: int) =
         let numberToIncrement = array[index]
         if numberToIncrement = z then
             array[index] <- a
-            incrementRec (index-1)
+            loop (index-1)
         else
             let nextCharacter = numberToIncrement + 1
             if forbiddenCharacters.Contains(nextCharacter) then
@@ -25,44 +25,44 @@ let inline increment (array: int[]) =
                 array[index] <- nextCharacter + 1
             else
                 array[index] <- numberToIncrement + 1
-    incrementRec (array.Length - 1)
-
-let rec countPairs (arr: int[]) (currentIndex: int) (lastPairIdx: int) (currentCount: int) =
-    if currentIndex >= arr.Length then 
-        currentCount
-    else
-        if currentIndex > 0 && arr[currentIndex] = arr[currentIndex-1] && (currentIndex < 2 || currentIndex - 2 <> lastPairIdx) then
-            countPairs arr (currentIndex + 1) (currentIndex - 1) (currentCount + 1)
-        else
-            countPairs arr (currentIndex + 1) lastPairIdx currentCount
+    loop (array.Length - 1)
 
 let runAlgorithm (input: int[]) =
+    //Clear up the input
     if input |> Array.exists (fun ch -> forbiddenCharacters.Contains(ch)) then
-        let idx = input |> Array.findIndex (fun ch -> forbiddenCharacters.Contains(ch))
-        do resetArrayAfter input idx
-        input[idx] <- input[idx] + 1
+        let index = input |> Array.findIndex (fun ch -> forbiddenCharacters.Contains(ch))
+        do resetArrayAfter input index
+        input[index] <- input[index] + 1
 
-    let hasIncrementalCharacters (arr: _[]) =
-        let mutable i = 2
-        let mutable found = false
-        while i < arr.Length && not found do
-            found <- arr[i] = arr[i - 1] + 1 && arr[i - 1] = arr[i - 2] + 1
-            i <- i + 1
-        found
+    let inline hasIncrementalCharacters (arr: _[]) =
+        let rec loop index =
+            if index >= arr.Length then 
+                false
+            elif arr[index - 2] + 1 = arr[index - 1] && arr[index - 1] + 1 = arr[index] then 
+                true
+            else 
+                loop (index + 1)
+        if arr.Length < 3 then 
+            false 
+        else
+            loop 2
 
-    let hasTwoDuplicates (arr: int[]) =
-        let rec loop i pairs =
-            if i >= arr.Length then false
-            elif arr[i] = arr[i - 1] then
+    let inline hasTwoDuplicates (arr: int[]) =
+        let rec loop index pairs =
+            if index >= arr.Length then 
+                false
+            elif arr[index] = arr[index - 1] then
                 let newPairs = pairs + 1
-                if newPairs = 2 then true
-                else loop (i + 2) newPairs
+                if newPairs = 2 then 
+                    true
+                else 
+                    loop (index + 2) newPairs
             else
-                loop (i + 1) pairs
+                loop (index + 1) pairs
         loop 1 0
 
     let rec findNextPassword (array: int[]) =
-        do increment array
+        do incrementPassword array
 
         if hasIncrementalCharacters array && hasTwoDuplicates array then
             array
@@ -79,6 +79,6 @@ let part1 (input: string[]) =
 let part2 (input: string[]) =
     let parsed = input[0].ToCharArray().Select(int).ToArray()
     let result = runAlgorithm parsed
-    increment result
+    incrementPassword result
     let newResult = runAlgorithm result
     new string(newResult.Select(char).ToArray())
