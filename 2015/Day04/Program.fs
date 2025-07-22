@@ -9,7 +9,6 @@ open System.Threading
 type WorkerMessage =
     | Found of int
     | Done
-    | Subscribe of AsyncReplyChannel<int>
 
 let parallelBruteForce (prefix: string) (isValid: byte[] -> bool) =
     let result = ref -1
