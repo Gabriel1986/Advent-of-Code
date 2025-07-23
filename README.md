@@ -27,3 +27,5 @@ Additional parameters:
 `<year> <day> <part>` - Runs the solution for a specific part of a specific day
 
 `test <other args>` - Runs the test cases for the specified other arguments (e.g. dotnet run test 2023 9 1)
+
+`benchmark <other args>` - Runs the solutions returned by other arguments 10x and averages the result (e.g. dotnet run benchmark all, dotnet run test benchmark all)
