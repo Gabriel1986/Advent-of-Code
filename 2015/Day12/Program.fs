@@ -2,7 +2,6 @@
 module Year2015Day12
 
 open System
-open Helpers
 open System.Text.RegularExpressions
 
 let numberRegex = Regex.numberRegex
