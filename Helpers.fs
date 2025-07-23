@@ -2,6 +2,10 @@
 module Helpers
     open System
     open System.Collections.Generic
+    open System.Text.RegularExpressions
+
+    module Regex =
+        let numberRegex = Regex("-?\d+", RegexOptions.Compiled)
 
     module Math =
         let BetweenInclusive (lowerBound: int) (upperBound: int) (value: int) =
@@ -25,6 +29,13 @@ module Helpers
                 list
             else
                 list |> List.take n
+
+        let safeMaxBy (predicate: 'a -> bool) (list: 'a list) =
+            if list |> List.exists predicate then
+                Some (list |> List.maxBy predicate)
+            else
+                None
+
 
         let rec permute (list: 'a list) : seq<'a list> = 
             seq {
