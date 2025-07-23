@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-and-parse:
+  benchmark:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -25,7 +25,7 @@ jobs:
       - name: Parse and output timings
         shell: bash
         run: |
-          echo "## Performance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Performance Summary (running on a github actions potatoe)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Year | Day | Part | Elapsed Time |" >> $GITHUB_STEP_SUMMARY
           echo "|------|-----|------|--------------|" >> $GITHUB_STEP_SUMMARY
