@@ -6,14 +6,16 @@ let parse (input: string) =
     let matches = numberRegex.Matches(input)
     (int matches[0].Value, int matches[1].Value, int matches[2].Value)
 
+let inline calculateDistance (time: int) (speed, fly, sleep) =
+    let iterationTime = fly + sleep
+    let nbIterations = time / iterationTime
+    let leftoverTime = time % iterationTime
+    nbIterations * fly * speed + min leftoverTime fly * speed
+
 let runPart1Algorithm (totalTime: int) (raindeer: (int * int * int) array) =
     (0, raindeer)
-    ||> Array.fold (fun maxDistance (speed, fly, sleep) ->
-        let iterationTime = fly + sleep
-        let nbIterations = totalTime / iterationTime
-        let leftoverTime = totalTime % iterationTime
-        let totalDistance = nbIterations * fly * speed + min leftoverTime fly * speed
-        max maxDistance totalDistance)
+    ||> Array.fold (fun maxDistance raindeer ->
+        max maxDistance (calculateDistance totalTime raindeer))
 
 //Brute force attempt
 let runPart2Algorithm (totalTime: int) (raindeer: (int * int * int) array) =
@@ -24,10 +26,7 @@ let runPart2Algorithm (totalTime: int) (raindeer: (int * int * int) array) =
         let currentLeadIndex, _, _ =
             ((0, 0, 0), indexedRaindeer)
             ||> Array.fold (fun (maxIndex, maxDistance, maxSpeed) (index, (speed, fly, sleep)) ->
-                let iterationTime = fly + sleep
-                let nbIterations = currentTime / iterationTime
-                let leftoverTime = currentTime % iterationTime
-                let totalDistance = nbIterations * fly * speed + min leftoverTime fly * speed
+                let totalDistance = calculateDistance currentTime (speed, fly, sleep)
                 //Raindeer are ordered by speed, if the distances are equal, the fastest one wins
                 if totalDistance >= maxDistance then
                     index, totalDistance, speed
