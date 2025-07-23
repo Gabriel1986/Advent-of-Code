@@ -29,14 +29,12 @@ let permuteNonCircular (people: string list) =
 let runAlgorithm (persons: string list) (determineHappiness: string -> string -> int) =
     (Int32.MinValue, permuteNonCircular persons)
     ||> Seq.fold (fun maxValue nextPermutation ->
-        let result =
-            let rec loop acc prev =
-                function
-                | [] -> acc + determineHappiness prev nextPermutation.Head
-                | x::xs -> loop (acc + determineHappiness prev x) x xs
-            loop 0 nextPermutation.Head nextPermutation.Tail
-
-        if result > maxValue then result else maxValue)
+        let rec loop acc prev =
+            function
+            | [] -> acc + determineHappiness prev nextPermutation.Head
+            | x::xs -> loop (acc + determineHappiness prev x) x xs
+        loop 0 nextPermutation.Head nextPermutation.Tail
+        |> max maxValue)
 
 let parseHappinessDictionary (input: string[]) =
     let happinessDictionary =
