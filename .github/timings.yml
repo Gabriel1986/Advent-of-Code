@@ -1,0 +1,41 @@
+name: Run and Parse Timings
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-and-parse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Run solution and save output
+        run: |
+          dotnet run > output.txt
+
+      - name: Parse and output timings
+        shell: bash
+        run: |
+          echo "## Performance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Year | Day | Part | Elapsed Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-----|------|--------------|" >> $GITHUB_STEP_SUMMARY
+
+          grep -Eo 'Year [0-9]+ - Day *[0-9]+ - Part *[0-9]+ - Elapsed: *[0-9\.]+ms' output.txt | while read -r line; do
+            if [[ $line =~ Year\ ([0-9]+)\ -\ Day\ *([0-9]+)\ -\ Part\ *([0-9]+)\ -\ Elapsed:\ *([0-9\.]+ms) ]]; then
+              year=${BASH_REMATCH[1]}
+              day=${BASH_REMATCH[2]}
+              part=${BASH_REMATCH[3]}
+              elapsed=${BASH_REMATCH[4]}
+              echo "| $year | $day | $part | $elapsed |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
