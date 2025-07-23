@@ -20,7 +20,7 @@ jobs:
 
       - name: Run solution and save output
         run: |
-          dotnet run > output.txt
+          dotnet run all benchmark > output.txt
 
       - name: Parse and output timings
         shell: bash
