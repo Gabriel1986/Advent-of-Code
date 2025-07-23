@@ -1,3 +1,5 @@
+[![AoC Benchmarks](https://github.com/Gabriel1986/Advent-of-Code/actions/workflows/benchmarks.yml/badge.svg)](https://github.com/Gabriel1986/Advent-of-Code/actions/workflows/benchmarks.yml)
+
 # Advent of Code solutions
 
 Wrote some solutions for Advent of Code (https://adventofcode.com) in F#.

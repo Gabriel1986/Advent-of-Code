@@ -1,4 +1,4 @@
-name: Run and Parse Timings
+name: Benchmark performance
 
 on:
   push:
