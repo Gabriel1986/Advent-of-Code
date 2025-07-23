@@ -11,15 +11,14 @@ type SimpleGane = {
     Player2: Player
 }
 
-let lastDigitRegex = Regex(@"\d+", RegexOptions.RightToLeft)
-
+let lastDigitRegex = Regex(@"\d+", RegexOptions.RightToLeft ||| RegexOptions.Compiled)
 //Working with positions 0 -> 9 in stead of 1 -> 10 to make it easier to just do modulo 10
 let parseInput (input: string array) =
     let givenPositionPlayer1 = (lastDigitRegex.Match input[0]).Value  |> int
     let givenPositionPlayer2 = (lastDigitRegex.Match input[1]).Value  |> int
     givenPositionPlayer1 - 1, givenPositionPlayer2 - 1
 
-let part1 (input) =
+let part1 (input: string[]) =
     let (givenPositionPlayer1, givenPositionPlayer2) = parseInput input
 
     let mutable game = {
@@ -64,7 +63,7 @@ module GameState =
         Player2 = { Position = givenPositionPlayer2; Score = 0 }
     }
 
-let part2 (input) =
+let part2 (input: string[]) =
     let (givenPositionPlayer1, givenPositionPlayer2) = parseInput input
 
     //Compresses the list of game states by combining those with the same (player playing + player positions)

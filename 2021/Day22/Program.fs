@@ -1,6 +1,5 @@
 /// https://adventofcode.com/2021/day/22
 module Year2021Day22
-open System.Text.RegularExpressions
 
 type AddOrSubtract =
     | Add
@@ -15,7 +14,7 @@ type AddOrSubtract =
         | Subtract -> bigint -1
 
 type Cuboid = { Type: AddOrSubtract; X: int * int; Y: int * int; Z: int * int }
-let private digitRegex = Regex(@"-?\d+")
+let private numberRegex = Regex.numberRegex
 
 let private hasOverlap (cuboid1: Cuboid) (cuboid2: Cuboid) =
     let hasOverlap (range1: int * int) (range2: int * int) =
@@ -62,7 +61,7 @@ let parseInput (lines: string array) (restrain: bool) =
         let splitLine = line.Split(" ")
         let cmd = splitLine[0]
         let cubeRange =
-            digitRegex.Matches(splitLine[1])
+            numberRegex.Matches(splitLine[1])
             |> Seq.map (fun each -> int each.Value)
             |> Seq.toArray
 

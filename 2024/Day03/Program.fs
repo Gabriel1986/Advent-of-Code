@@ -3,10 +3,9 @@ module Year2024Day3
 
 open System.Text.RegularExpressions
 
-
-let part1Regex = Regex(@"mul\(\d+,\d+\)")
-let part2Regex = Regex(@"(mul\(\d+,\d+\))|(do\(\))|(don't\(\))")
-let numberRegex = Regex("\d+")
+let part1Regex = Regex(@"mul\(\d+,\d+\)", RegexOptions.Compiled)
+let part2Regex = Regex(@"(mul\(\d+,\d+\))|(do\(\))|(don't\(\))", RegexOptions.Compiled)
+let numberRegex = Regex.numberRegex
 
 let part1 (input: string[]): int =
     input

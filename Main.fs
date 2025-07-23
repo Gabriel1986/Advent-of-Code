@@ -2,10 +2,10 @@
 open System
 open System.IO
 open System.Reflection
-open System.Text.RegularExpressions
+open Helpers
 
 let mutable useTestData = false
-let private numberRegex = Regex(@"\d+")
+let private numberRegex = Regex.numberRegex
 
 type Input = {
     Year: int

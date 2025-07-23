@@ -1,8 +1,9 @@
 /// https://adventofcode.com/2023/day/7
 module Year2023Day7
-open System.Text.RegularExpressions
 
-let digitRegex = Regex(@"\d+")
+open Helpers
+
+let numberRegex = Regex.numberRegex
 
 let cards =
     [

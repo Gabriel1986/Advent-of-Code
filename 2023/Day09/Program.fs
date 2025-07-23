@@ -1,13 +1,11 @@
 /// https://adventofcode.com/2023/day/9
 module Year2023Day9
 open System.Numerics
-open System.Text.RegularExpressions
 
+let numberRegex = Regex.numberRegex
 let private parseInput (input: string array) =
-    let digitRegex = Regex(@"(-)?\d+")
-
     input
-    |> Array.map (digitRegex.Matches >> Seq.map (fun x -> BigInteger.Parse x.Value) >> Seq.toList)
+    |> Array.map (numberRegex.Matches >> Seq.map (fun x -> BigInteger.Parse x.Value) >> Seq.toList)
 
 let private calculateColunn (stopCondition: bigint seq -> bigint seq -> bool) (subtract: bigint * bigint -> bigint) (currentLevelNumbers: bigint seq)  =
     let rec calculateLeftColumn (acc: bigint list) (currentLevelNumbers: bigint seq) =

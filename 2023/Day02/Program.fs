@@ -1,9 +1,7 @@
 /// https://adventofcode.com/2023/day/2
 module Year2023Day2
-open System
-open System.Text.RegularExpressions
 
-let digitRegex = Regex(@"\d+")
+let numberRegex = Regex.numberRegex
 
 type DiePull = { DieColor: string; NumberOfDice: int }
 
@@ -32,7 +30,7 @@ let part1 (input) =
 
     input
     |> Array.sumBy (fun line ->
-        let gameNumber = int(digitRegex.Match(line).Value)
+        let gameNumber = int(numberRegex.Match(line).Value)
 
         let gameIsImpossible =
             line

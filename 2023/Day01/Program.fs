@@ -2,20 +2,20 @@
 module Day1
 open System.Text.RegularExpressions
 
-let part1 (input) =
-    let digitRegex = System.Text.RegularExpressions.Regex(@"\d")
-    let lastDigitRegex = System.Text.RegularExpressions.Regex(@"\d", RegexOptions.RightToLeft)
+let singleDigitRegex = Regex(@"\d", RegexOptions.Compiled)
+let lastSingleDigitRegex = Regex(@"\d", RegexOptions.RightToLeft ||| RegexOptions.Compiled)
 
+let part1 (input: string[]) =
     input
     |> Array.sumBy (fun line ->
-        (line |> digitRegex.Match |> fun x -> x.Index, line |> lastDigitRegex.Match |> fun x -> x.Index)
+        (line |> singleDigitRegex.Match |> fun x -> x.Index, line |> lastSingleDigitRegex.Match |> fun x -> x.Index)
         |> fun (firstIndex, lastIndex) -> int $"{line[firstIndex]}{line[lastIndex]}"
     )
 
-let part2 (input) =
-    let digitRegex = System.Text.RegularExpressions.Regex(@"(\d|one|two|three|four|five|six|seven|eight|nine)")
-    let lastDigitRegex = System.Text.RegularExpressions.Regex(@"(\d|one|two|three|four|five|six|seven|eight|nine)", RegexOptions.RightToLeft)
+let digitRegex = Regex(@"(\d|one|two|three|four|five|six|seven|eight|nine)", RegexOptions.Compiled)
+let lastDigitRegex = Regex(@"(\d|one|two|three|four|five|six|seven|eight|nine)", RegexOptions.RightToLeft ||| RegexOptions.Compiled)
 
+let part2 (input: string[]) =
     let dictionary=
         [
             "1", 1

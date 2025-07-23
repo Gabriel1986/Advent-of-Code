@@ -2,13 +2,12 @@
 module Year2023Day6
 
 open System.Numerics
-open System.Text.RegularExpressions
 
-let digitRegex = Regex(@"\d+")
+let numberRegex = Regex.numberRegex
 
 let parseInput (input: string array) =
-    let times  = digitRegex.Matches input[0] |> Seq.map (fun m -> BigInteger.Parse m.Value)
-    let distances = digitRegex.Matches input[1] |> Seq.map (fun m -> BigInteger.Parse m.Value)
+    let times  = numberRegex.Matches input[0] |> Seq.map (fun m -> BigInteger.Parse m.Value)
+    let distances = numberRegex.Matches input[1] |> Seq.map (fun m -> BigInteger.Parse m.Value)
     Seq.zip times distances
 
 type LimitType = LeftLimit | RightLimit

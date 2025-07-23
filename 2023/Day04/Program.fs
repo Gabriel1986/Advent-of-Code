@@ -1,9 +1,7 @@
 /// https://adventofcode.com/2023/day/4
 module Year2023Day4
-open System.Text.RegularExpressions
 
-let numberRegex = Regex(@"\d+")
-
+let numberRegex = Regex.numberRegex
 let calculateNbMatchesOnLine (line: string) =
     match (line.Split(":")[1]).Split("|") with
     | [| winningNumbers; myNumbers |] ->

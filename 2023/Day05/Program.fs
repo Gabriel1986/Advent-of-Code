@@ -1,9 +1,10 @@
 /// https://adventofcode.com/2023/day/5
 module Year2023Day5
 open System
-open System.Text.RegularExpressions
 
 type MinMax = { Min: bigint; Max: bigint }
+
+let numberRegex = Regex.numberRegex
 
 let convertToMinMax (line: string): (MinMax * MinMax) =
     let minMax = line.Split(" ")
@@ -12,7 +13,6 @@ let convertToMinMax (line: string): (MinMax * MinMax) =
     let source = bigint.Parse minMax[1]
     { Min = source; Max = source + range - bigint 1 }, { Min = destination; Max = destination + range - bigint 1 }
 
-let digitRegex = Regex(@"\d+")
 
 let parseInput (input: string array) =
     (([], []), input)
@@ -22,7 +22,7 @@ let parseInput (input: string array) =
         elif line.StartsWith("seeds:") then
             let theSeeds =
                 line
-                |> digitRegex.Matches
+                |> numberRegex.Matches
                 |> Seq.map (fun each -> bigint.Parse each.Value)
                 |> Seq.toList
             (theSeeds, maps)

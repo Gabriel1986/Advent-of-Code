@@ -3,7 +3,7 @@ module Year2023Day8
 open System.Numerics
 open System.Text.RegularExpressions
 
-let private nodeRegex = Regex(@"[A-Z0-9]{3}")
+let private nodeRegex = Regex(@"[A-Z0-9]{3}", RegexOptions.Compiled)
 
 let private parseInput (input: string array) =
     let instructions =

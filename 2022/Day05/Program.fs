@@ -1,10 +1,8 @@
 /// https://adventofcode.com/2022/day/5
 module Year2022Day5
 open System
-open System.Text.RegularExpressions
 
-let digitRegex = Regex("\d+")
-
+let numberRegex = Regex.numberRegex
 let parseContainerStacksAndMovements (input: string array) =
     let indexOfEmpty = input |> Array.findIndex String.IsNullOrWhiteSpace
     let (containerConfig, movements) = input |> Array.splitAt (indexOfEmpty + 1)
@@ -36,7 +34,7 @@ let parseContainerStacksAndMovements (input: string array) =
 let part1 (input) =
     parseContainerStacksAndMovements input
     ||> Array.fold (fun stacks movement ->
-        let matches = digitRegex.Matches(movement)
+        let matches = numberRegex.Matches(movement)
         let nbContainersToMove = int matches[0].Value
         let fromContainerIndex = int matches[1].Value - 1
         let toContainerIndex = int matches[2].Value - 1
@@ -60,7 +58,7 @@ let part1 (input) =
 let part2 (input) =
     parseContainerStacksAndMovements input
     ||> Array.fold (fun stacks movement ->
-        let matches = digitRegex.Matches(movement)
+        let matches = numberRegex.Matches(movement)
         let nbContainersToMove = int matches[0].Value
         let fromContainerIndex = int matches[1].Value - 1
         let toContainerIndex = int matches[2].Value - 1

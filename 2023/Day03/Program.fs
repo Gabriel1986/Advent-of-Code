@@ -1,17 +1,19 @@
 /// https://adventofcode.com/2023/day/3
 module Year2023Day3
+
 open System.Text.RegularExpressions
 
-let part1 (input) =
-    let numberRegex = Regex("[0-9]+")
-    let specialCharacterRegex = Regex("[^0-9\\.]")
+let numberRegex = Regex.numberRegex
+let part1SpecialCharacterRegex = Regex("[^0-9\\.]", RegexOptions.Compiled)
+let part2SpecialCharacterRegex = Regex("[\\*]", RegexOptions.Compiled)
 
+let part1 (input) =
     //row * (row * column)
     let indexesOfSpecialCharacters =
         input
         |> Array.indexed
         |> Seq.collect (fun (rowIndex, line) ->
-            specialCharacterRegex.Matches(line)
+            part1SpecialCharacterRegex.Matches(line)
             |> Seq.map (fun aMatch -> (rowIndex, aMatch.Index))
         )
         |> Seq.groupBy fst
@@ -39,15 +41,13 @@ type Star = { RowIndex: RowIndex; ColumnIndex: ColumnIndex }
 type ValueNearStar = { Star: Star; Value: int }
 
 let part2 (input) =
-    let numberRegex = Regex("[0-9]+")
-    let specialCharacterRegex = Regex("[\\*]")
 
     //rowIndex * Star
     let indexesOfStars =
         input
         |> Array.indexed
         |> Seq.collect (fun (rowIndex, line) ->
-            specialCharacterRegex.Matches(line)
+            part2SpecialCharacterRegex.Matches(line)
             |> Seq.map (fun aMatch -> { RowIndex = rowIndex; ColumnIndex = aMatch.Index })
         )
         |> Seq.groupBy _.RowIndex
