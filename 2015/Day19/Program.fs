@@ -41,27 +41,27 @@ let runPart2 (conversions: (string * string)[], molecule: string) =
         |> Array.map (fun (f, t) -> (t, f))
         |> Array.sortByDescending (fun (toStr, _) -> toStr.Length)
 
-    let mutable currentMolecule = molecule
-    let mutable steps = 0
+    let rec greedyReduce currentMolecule steps =
+        if currentMolecule = "e" then
+            steps
+        else
+            // Try to find a replacement
+            let rec tryReplace index =
+                if index >= Array.length reversedConversions then
+                    None
+                else
+                    let (toStr, fromStr) = reversedConversions[index]
+                    let idx = currentMolecule.IndexOf(toStr)
+                    if idx >= 0 then
+                        Some (currentMolecule.Substring(0, idx) + fromStr + currentMolecule.Substring(idx + toStr.Length))
+                    else
+                        tryReplace (index + 1)
 
-    while currentMolecule <> "e" do
-        let mutable replaced = false
-        let mutable index = 0
+            match tryReplace 0 with
+            | Some newMolecule -> greedyReduce newMolecule (steps + 1)
+            | None -> failwithf "Stuck, cannot reduce molecule further: %s" currentMolecule
 
-        while not replaced && index < reversedConversions.Length do
-            let (toStr, fromStr) = reversedConversions[index]
-            let idx = currentMolecule.IndexOf(toStr)
-            if idx >= 0 then
-                //Replace parts of the molecule
-                currentMolecule <- currentMolecule.Substring(0, idx) + fromStr + currentMolecule.Substring(idx + toStr.Length)
-                steps <- steps + 1
-                replaced <- true
-            else
-                index <- index + 1
-
-        if not replaced then
-            failwithf "Stuck, cannot reduce molecule further: %s" currentMolecule
-    steps
+    greedyReduce molecule 0
 
 let part2 (input: string[]) =
     parseInput input
