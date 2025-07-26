@@ -1,6 +1,10 @@
 /// https://adventofcode.com/2015/day/18
 module Year2015Day18
 
+open System.Threading.Tasks
+open System
+//Can't get this to be fast without using mutations unfortunately.
+
 let inline private parseLights (gridSize) (input: string[]) =
     let lightsArray = Array.zeroCreate<bool> (gridSize * gridSize)
     for x = 0 to gridSize - 1 do
@@ -10,6 +14,7 @@ let inline private parseLights (gridSize) (input: string[]) =
             | _ -> ()
     lightsArray
 
+//This is the hot path, running millions of times. I can't get this faster than it is right now without resorting to pointer manipulation.
 let inline private countNeighbourLights (gridSize: int) (x: int, y: int) (state: bool[]) =
     let mutable count = 0
     let idx = x * gridSize + y
@@ -42,16 +47,26 @@ let inline private determineLightShouldTurnOn (gridSize: int) (currentState:  bo
     |> countNeighbourLights gridSize (x, y)
     |> (=) 3
 
+let processorCount = Environment.ProcessorCount
 let inline private evolve (gridSize: int) (currentState: bool[]) =
     let next = Array.zeroCreate<bool> (gridSize * gridSize)
-    for x in 0 .. gridSize - 1 do
-        for y in 0 .. gridSize - 1 do
-            let idx = x * gridSize + y
-            let neighboursOn = countNeighbourLights gridSize (x, y) currentState
-            if currentState[idx] then
-                next[idx] <- neighboursOn = 3 || neighboursOn = 2
-            else
-                next[idx] <- neighboursOn = 3
+    let length = currentState.Length
+    let chunkSize = (gridSize + processorCount - 1) / processorCount // divide rows roughly equally
+
+    let processChunk (chunkIndex: int) =
+        let startRow = chunkIndex * chunkSize
+        let endRow = min gridSize ((chunkIndex + 1) * chunkSize)
+        for x in startRow .. endRow - 1 do
+            for y in 0 .. gridSize - 1 do
+                let idx = x * gridSize + y
+                let neighboursOn = countNeighbourLights gridSize (x, y) currentState
+                if currentState[idx] then
+                    next[idx] <- neighboursOn = 3 || neighboursOn = 2
+                else
+                    next[idx] <- neighboursOn = 3
+
+    Parallel.For(0, processorCount, (fun i -> processChunk i)) |> ignore
+
     next
 
 let runPart1 (input: string[]) (nbIterations: int) =
